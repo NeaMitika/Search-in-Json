@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conditional Fields</title>
+  <!-- Include Select2 library CSS -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+</head>
+<body>
+    <form action="output.php" method="post">
+        <label for="countries">Select Country:</label>
+        <select id="countries" class="select2" name="country">
+          <option value="">Select a country</option>
+        </select>
+    
+        <label for="states">Select State:</label>
+        <select id="states" class="select2" name="state">
+          <option value="">Select a state</option>
+        </select>
+    
+        <label for="cities">Select City:</label>
+        <select id="cities" class="select2" name="city">
+          <option value="">Select a city</option>
+        </select>
+    
+        <button type="submit">Submit</button>
+    </form>
+
+  <!-- Include jQuery library -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Include Select2 library JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+<script>
+  // Initialize Select2 on select elements
+  $(".select2").select2();
+
+  // Load data from JSON files
+  $.getJSON("countries.json", function(countries) {
+    // Populate countries select
+    countries.forEach(country => {
+      $("#countries").append(new Option(country.name, country.id));
+    });
+
+    // Event listener for country selection
+    $("#countries").on("change", function() {
+      const selectedCountryId = $(this).val();
+      const statesSelect = $("#states");
+      const citiesSelect = $("#cities");
+
+      statesSelect.empty();
+      citiesSelect.empty();
+
+      $.getJSON("states.json", function(states) {
+        if (selectedCountryId) {
+          const filteredStates = states.filter(state => state.country_id === selectedCountryId);
+          filteredStates.forEach(state => {
+            statesSelect.append(new Option(state.name, state.id));
+          });
+        }
+
+        // Refresh Select2 elements
+        statesSelect.trigger("change");
+        citiesSelect.trigger("change");
+      });
+    });
+
+    // Event listener for state selection
+    $("#states").on("change", function() {
+      const selectedStateId = $(this).val();
+      const citiesSelect = $("#cities");
+
+      citiesSelect.empty();
+
+      $.getJSON("cities.json", function(cities) {
+        if (selectedStateId) {
+          const filteredCities = cities.filter(city => city.state_id === selectedStateId);
+          filteredCities.forEach(city => {
+            citiesSelect.append(new Option(city.name, city.id));
+          });
+        }
+
+        // Refresh Select2 elements
+        citiesSelect.trigger("change");
+      });
+    });
+  });
+</script>
+</body>
+</html>
